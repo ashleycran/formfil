@@ -46,4 +46,8 @@ services:
       - key: PORT
         value: "10000"
 
+      # Force Python 3.11 to avoid C-extension build errors with Python 3.14
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+
     healthCheckPath: /health   # Render will also ping this to confirm the service is up
