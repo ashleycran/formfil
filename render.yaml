@@ -39,9 +39,7 @@ services:
       - key: KEEP_ALIVE_PING_INTERVAL
         value: "240"
 
-      # Keep-alive self-pinger needs the public URL to ping itself
-      - key: RENDER_EXTERNAL_URL
-        sync: false          # set manually to https://<your-service>.onrender.com
+      # Keep-alive self-pinger needs the public URL — Render injects RENDER_EXTERNAL_URL automatically
 
       # Render sets this automatically, but we declare it for clarity
       - key: PORT
