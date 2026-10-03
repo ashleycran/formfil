@@ -1,0 +1,49 @@
+services:
+  - type: web          # "web" so Render assigns a public URL for UptimeRobot pings
+    name: formbot
+    runtime: python
+    plan: free         # change to "starter" or "standard" to scale up
+
+    buildCommand: |
+      pip install -r requirements.txt
+      playwright install chromium
+      playwright install-deps chromium
+
+    startCommand: python main.py
+
+    # Render injects PORT automatically; keep_alive.py reads it
+    envVars:
+      - key: BOT_TOKEN
+        sync: false          # set manually in Render dashboard — never commit the value
+
+      - key: ADMIN_TELEGRAM_ID
+        sync: false
+
+      - key: DATABASE_URL
+        sync: false
+
+      # Concurrency tuning — safe defaults for free tier (512 MB RAM)
+      # Increase these when upgrading to a paid plan
+      - key: MAX_GLOBAL_CONCURRENT_TABS
+        value: "3"
+
+      - key: MAX_TABS_PER_USER
+        value: "1"
+
+      - key: PAGE_TIMEOUT_MS
+        value: "25000"
+
+      - key: POST_SUBMIT_WAIT_MS
+        value: "3000"
+
+      - key: IDLE_HEARTBEAT_INTERVAL
+        value: "20"
+
+      - key: KEEP_ALIVE_PING_INTERVAL
+        value: "240"
+
+      # Render sets this automatically, but we declare it for clarity
+      - key: PORT
+        value: "10000"
+
+    healthCheckPath: /health   # Render will also ping this to confirm the service is up
