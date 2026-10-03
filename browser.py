@@ -158,6 +158,9 @@ class BrowserManager:
 
         await self._ensure_started()
 
+        if _tab_semaphore is None:
+            return {"status": "ERROR", "reason": "Browser semaphore not initialised yet"}
+
         async with _tab_semaphore:
             context = await self._browser.new_context(
                 user_agent=(
@@ -246,7 +249,7 @@ class BrowserManager:
                     }
 
                 # ── 4. Find & click submit button ────────────────────────
-                submit = contact_form.locator(
+                submit_locator = contact_form.locator(
                     "button[type='submit'], "
                     "input[type='submit'], "
                     "button:has-text('Submit'), "
@@ -255,11 +258,12 @@ class BrowserManager:
                     "button:has-text('Send Inquiry'), "
                     "button:has-text('Contact Us'), "
                     "button:has-text('Get In Touch')"
-                ).first
+                )
 
-                if not await submit.count():
+                if not await submit_locator.count():
                     return {"status": "FAILED", "reason": "Submit button not found"}
 
+                submit = submit_locator.first
                 await submit.click(timeout=10000)
                 await page.wait_for_timeout(POST_SUBMIT_WAIT_MS)
 

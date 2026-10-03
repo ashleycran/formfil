@@ -14,6 +14,11 @@ if ADMIN_TELEGRAM_ID:
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
+# Fail fast with a clear message if critical env vars are missing
+_missing = [k for k, v in {"BOT_TOKEN": BOT_TOKEN, "DATABASE_URL": DATABASE_URL}.items() if not v]
+if _missing:
+    raise EnvironmentError(f"Missing required environment variable(s): {', '.join(_missing)}")
+
 # --- Concurrency tuning ---
 # Render FREE  (512MB RAM):  MAX_GLOBAL_CONCURRENT_TABS=3, MAX_TABS_PER_USER=1
 # Render Starter ($7, 512MB): keep 3-5 / 1-2

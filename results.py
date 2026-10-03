@@ -41,8 +41,12 @@ async def results_history(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = "📜 Recent History\n\n"
     for r in results:
         status_icon = "✅" if r['status'] == 'SUCCESS' else "❌" if r['status'] == 'FAILED' else "⚠️"
-        text += f"{status_icon} {r['url']}\n"
+        line = f"{status_icon} {r['url']}\n"
         if r['reason']:
-            text += f"   {r['reason']}\n"
+            line += f"   {r['reason']}\n"
+        if len(text) + len(line) > 3800:
+            text += "…(truncated — too many results to display)"
+            break
+        text += line
             
     await query.edit_message_text(text, reply_markup=keyboards.get_back_home_keyboard("menu_results"), disable_web_page_preview=True)

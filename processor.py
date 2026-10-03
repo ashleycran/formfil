@@ -82,6 +82,7 @@ async def _run_processing(user_id: int, websites: list, profile: dict,
     failed    = 0
     review    = 0
     lock      = asyncio.Lock()   # protects the counters above
+    pending: list = []           # populated below; referenced in CancelledError handler
 
     async def _process_one(w: dict):
         nonlocal processed, success, failed, review
@@ -128,7 +129,6 @@ async def _run_processing(user_id: int, websites: list, profile: dict,
 
         pending   = [asyncio.ensure_future(_guarded(w)) for w in websites]
         completed = 0
-
         for coro in asyncio.as_completed(pending):
             await coro
             completed += 1

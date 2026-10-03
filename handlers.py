@@ -101,6 +101,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await admin.admin_panel(update, context)
     elif data == "admin_users":
         await admin.admin_users_list(update, context)
+    elif data == "admin_remove_user":
+        await admin.admin_users_list(update, context)   # lists users; each has a Remove Access button
     elif data.startswith("admin_view_user_"):
         await admin.admin_view_user(update, context)
     elif data == "admin_add_user":
