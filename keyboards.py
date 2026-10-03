@@ -93,6 +93,21 @@ def get_back_home_keyboard(back_callback="menu_main"):
     ]
     return InlineKeyboardMarkup(keyboard)
 
+def get_cancel_keyboard(cancel_callback="menu_main"):
+    """Single cancel button shown during text-input states so the user can bail out."""
+    keyboard = [
+        [InlineKeyboardButton("❌ Cancel", callback_data=cancel_callback)]
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
+def get_confirm_keyboard(confirm_callback, cancel_callback="menu_main"):
+    """Yes/No confirmation row."""
+    keyboard = [
+        [InlineKeyboardButton("✅ Yes, confirm", callback_data=confirm_callback),
+         InlineKeyboardButton("❌ Cancel",        callback_data=cancel_callback)]
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
 def get_pagination_keyboard(items, page, total_pages, callback_prefix):
     keyboard = []
     

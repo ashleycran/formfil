@@ -20,8 +20,14 @@ async def websites_add_prompt(update: Update, context: ContextTypes.DEFAULT_TYPE
     
     context.user_data['state'] = 'WAITING_FOR_WEBSITES'
     
-    text = "🌐 Send the website URL(s).\n\nYou can send multiple URLs in one message."
-    await query.edit_message_text(text, reply_markup=keyboards.get_back_home_keyboard("menu_websites"))
+    text = (
+        "🌐 Add Websites\n\n"
+        "Send one or more URLs (one per line or space-separated).\n\n"
+        "Example:\n"
+        "https://example.com\n"
+        "https://another.com"
+    )
+    await query.edit_message_text(text, reply_markup=keyboards.get_cancel_keyboard("cancel_websites_add"))
 
 async def websites_upload_prompt(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -29,8 +35,8 @@ async def websites_upload_prompt(update: Update, context: ContextTypes.DEFAULT_T
     
     context.user_data['state'] = 'WAITING_FOR_WEBSITES_FILE'
     
-    text = "📄 Upload a .txt file containing URLs."
-    await query.edit_message_text(text, reply_markup=keyboards.get_back_home_keyboard("menu_websites"))
+    text = "📄 Upload TXT\n\nSend a .txt file with one URL per line."
+    await query.edit_message_text(text, reply_markup=keyboards.get_cancel_keyboard("cancel_websites_upload"))
 
 async def websites_view(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -120,7 +126,10 @@ async def handle_websites_text(update: Update, context: ContextTypes.DEFAULT_TYP
     
     urls = extract_urls(text)
     if not urls:
-        await update.message.reply_text("No valid URLs found. Please include http:// or https://", reply_markup=keyboards.get_back_home_keyboard("menu_websites"))
+        await update.message.reply_text(
+            "⚠️ No valid URLs found. Make sure they start with http:// or https://\n\nTry again or cancel below.",
+            reply_markup=keyboards.get_cancel_keyboard("cancel_websites_add"),
+        )
         return True
         
     added = 0
@@ -128,8 +137,11 @@ async def handle_websites_text(update: Update, context: ContextTypes.DEFAULT_TYP
         if await database.add_website(user_id, url):
             added += 1
             
-    await update.message.reply_text(f"✅ Added {added} websites.\n(Duplicates ignored)", reply_markup=keyboards.get_back_home_keyboard("menu_websites"))
     context.user_data['state'] = None
+    await update.message.reply_text(
+        f"✅ Added {added} website(s). (Duplicates ignored)",
+        reply_markup=keyboards.get_back_home_keyboard("menu_websites"),
+    )
     return True
 
 async def handle_websites_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -142,7 +154,10 @@ async def handle_websites_document(update: Update, context: ContextTypes.DEFAULT
     document = update.message.document
     
     if not document.file_name.endswith('.txt'):
-        await update.message.reply_text("Please upload a .txt file.")
+        await update.message.reply_text(
+            "⚠️ Please upload a .txt file. Try again or cancel below.",
+            reply_markup=keyboards.get_cancel_keyboard("cancel_websites_upload"),
+        )
         return True
         
     file = await context.bot.get_file(document.file_id)
@@ -152,7 +167,6 @@ async def handle_websites_document(update: Update, context: ContextTypes.DEFAULT
     urls = extract_urls(content)
     added = 0
     duplicates = 0
-    invalid = len(content.splitlines()) - len(urls)
     
     for url in urls:
         if await database.add_website(user_id, url):
@@ -160,7 +174,7 @@ async def handle_websites_document(update: Update, context: ContextTypes.DEFAULT
         else:
             duplicates += 1
             
+    context.user_data['state'] = None
     text = f"📄 Import Complete\n\nFound: {len(urls)}\nAdded: {added}\nDuplicates: {duplicates}"
     await update.message.reply_text(text, reply_markup=keyboards.get_back_home_keyboard("menu_websites"))
-    context.user_data['state'] = None
     return True

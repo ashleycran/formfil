@@ -114,18 +114,30 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif data == "menu_profile":
         await profile.profile_menu(update, context)
     elif data == "profile_clear":
+        await profile.profile_clear_confirm(update, context)
+    elif data == "profile_clear_do":
         await profile.profile_clear(update, context)
     elif data == "profile_edit":
         await profile.profile_edit_start(update, context)
-        
+    elif data == "cancel_profile_edit":
+        await query.answer()
+        context.user_data["state"] = None
+        await profile.profile_menu(update, context)
+
     # Message
     elif data == "menu_message":
         await profile.message_menu(update, context)
     elif data == "message_clear":
+        await profile.message_clear_confirm(update, context)
+    elif data == "message_clear_do":
         await profile.message_clear(update, context)
     elif data == "message_edit":
         await profile.message_edit_start(update, context)
-        
+    elif data == "cancel_message_edit":
+        await query.answer()
+        context.user_data["state"] = None
+        await profile.message_menu(update, context)
+
     # Websites
     elif data == "menu_websites":
         await websites.websites_menu(update, context)
@@ -141,6 +153,14 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await websites.websites_delprompt(update, context)
     elif data.startswith("websites_dodelete_"):
         await websites.websites_dodelete(update, context)
+    elif data == "cancel_websites_add":
+        await query.answer()
+        context.user_data["state"] = None
+        await websites.websites_menu(update, context)
+    elif data == "cancel_websites_upload":
+        await query.answer()
+        context.user_data["state"] = None
+        await websites.websites_menu(update, context)
         
     # Processing
     elif data == "menu_start":
@@ -170,6 +190,11 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await schedule_handler.schedule_set_prompt(update, context)
     elif data == "schedule_remove":
         await schedule_handler.schedule_remove(update, context)
+    elif data == "cancel_schedule_set":
+        await query.answer()
+        context.user_data["state"] = None
+        context.user_data.pop("schedule_hour", None)
+        await schedule_handler.schedule_menu(update, context)
 
     # Settings
     elif data == "menu_settings":

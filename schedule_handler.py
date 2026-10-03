@@ -89,15 +89,20 @@ async def handle_schedule_text(update: Update, context: ContextTypes.DEFAULT_TYP
             if not 0 <= hour <= 23:
                 raise ValueError
         except ValueError:
-            await update.message.reply_text("Please send a number between 0 and 23.")
+            await update.message.reply_text(
+                "⚠️ Please send a number between 0 and 23.",
+                reply_markup=keyboards.get_cancel_keyboard("cancel_schedule_set"),
+            )
             return True
 
         context.user_data["schedule_hour"] = hour
         context.user_data["state"] = "SCHEDULE_WAITING_MINUTE"
 
         await update.message.reply_text(
+            f"⏰ Set Schedule\n\n"
             f"Hour set to {hour:02d}.\n\n"
-            "What minute? (0–59)\n\nExample: type `0` for on the hour, `30` for half past."
+            "What minute? (0–59)\n\nExample: `0` for on the hour, `30` for half past.",
+            reply_markup=keyboards.get_cancel_keyboard("cancel_schedule_set"),
         )
         return True
 
@@ -107,10 +112,13 @@ async def handle_schedule_text(update: Update, context: ContextTypes.DEFAULT_TYP
             if not 0 <= minute <= 59:
                 raise ValueError
         except ValueError:
-            await update.message.reply_text("Please send a number between 0 and 59.")
+            await update.message.reply_text(
+                "⚠️ Please send a number between 0 and 59.",
+                reply_markup=keyboards.get_cancel_keyboard("cancel_schedule_set"),
+            )
             return True
 
-        hour   = context.user_data.pop("schedule_hour", 9)
+        hour    = context.user_data.pop("schedule_hour", 9)
         user_id = update.effective_user.id
         await database.set_schedule(user_id, hour, minute)
 
@@ -118,7 +126,7 @@ async def handle_schedule_text(update: Update, context: ContextTypes.DEFAULT_TYP
 
         await update.message.reply_text(
             f"✅ Schedule saved!\n\n"
-            f"The bot will automatically run every day at {hour:02d}:{minute:02d} UTC.",
+            f"The bot will run automatically every day at {hour:02d}:{minute:02d} UTC.",
             reply_markup=keyboards.get_back_home_keyboard("menu_schedule"),
         )
         return True
