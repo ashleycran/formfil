@@ -1,4 +1,6 @@
 import asyncio
+from telegram import Update
+from telegram.error import Conflict, NetworkError
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters
 from config import BOT_TOKEN
 import handlers
@@ -11,6 +13,19 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
+
+logger = logging.getLogger(__name__)
+
+
+async def error_handler(update: object, context) -> None:
+    if isinstance(context.error, Conflict):
+        # Two instances polling at the same time — happens briefly during deploys
+        logger.warning("[bot] Conflict: another instance is polling. Will retry automatically.")
+        return
+    if isinstance(context.error, NetworkError):
+        logger.warning(f"[bot] Network error (will retry): {context.error}")
+        return
+    logger.exception(f"[bot] Unhandled exception: {context.error}", exc_info=context.error)
 
 async def post_init(application: Application):
     from browser import init_semaphore
@@ -36,6 +51,7 @@ def main():
     application.add_handler(CallbackQueryHandler(handlers.button_handler))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handlers.text_handler))
     application.add_handler(MessageHandler(filters.Document.ALL, handlers.document_handler))
+    application.add_error_handler(error_handler)
 
     print("Bot is starting...")
     application.run_polling()
