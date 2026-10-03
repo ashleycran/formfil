@@ -24,7 +24,7 @@ services:
 
     buildCommand: |
       pip install -r requirements.txt
-      PLAYWRIGHT_BROWSERS_PATH=0 playwright install chromium
+      PLAYWRIGHT_BROWSERS_PATH=/opt/render/project/src/browsers playwright install chromium --with-deps
 
     startCommand: python main.py
 
@@ -69,7 +69,7 @@ services:
 
       # Store Playwright browsers inside the project so they survive between build and runtime
       - key: PLAYWRIGHT_BROWSERS_PATH
-        value: "0"
+        value: "/opt/render/project/src/browsers"
 
       # Force Python 3.11 to avoid C-extension build errors with Python 3.14
       - key: PYTHON_VERSION
