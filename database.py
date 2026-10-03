@@ -177,6 +177,18 @@ async def get_results_summary(telegram_id):
         ''', telegram_id)
         return {row['status']: row['count'] for row in rows}
 
+async def get_results_by_status(telegram_id: int, statuses: list) -> list:
+    """Return all results matching any of the given statuses, newest first."""
+    async with _pool.acquire() as conn:
+        placeholders = ", ".join(f"${i+2}" for i in range(len(statuses)))
+        rows = await conn.fetch(
+            f"SELECT url, status, reason, created_at FROM results "
+            f"WHERE telegram_id = $1 AND status = ANY(ARRAY[{placeholders}]::text[]) "
+            f"ORDER BY id DESC",
+            telegram_id, *statuses,
+        )
+        return [dict(row) for row in rows]
+
 async def get_recent_results(telegram_id, limit=10):
     async with _pool.acquire() as conn:
         rows = await conn.fetch('''

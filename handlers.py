@@ -180,6 +180,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif data in ["results_success", "results_failed", "results_problems"]:
         # Simplified for now, just show history
         await results.results_history(update, context)
+    elif data == "results_export_failed":
+        await results.results_export_failed(update, context)
+    elif data == "results_export_success":
+        await results.results_export_success(update, context)
         
     # Dashboard
     elif data in ("menu_dashboard", "dashboard_refresh"):

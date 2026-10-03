@@ -70,9 +70,11 @@ def get_processing_keyboard():
 def get_results_keyboard():
     keyboard = [
         [InlineKeyboardButton("✅ Successful", callback_data="results_success"),
-         InlineKeyboardButton("❌ Failed", callback_data="results_failed")],
-        [InlineKeyboardButton("⚠️ Problems", callback_data="results_problems"),
-         InlineKeyboardButton("📜 History", callback_data="results_history")],
+         InlineKeyboardButton("❌ Failed",     callback_data="results_failed")],
+        [InlineKeyboardButton("⚠️ Problems",  callback_data="results_problems"),
+         InlineKeyboardButton("📜 History",   callback_data="results_history")],
+        [InlineKeyboardButton("📥 Export Failed",  callback_data="results_export_failed"),
+         InlineKeyboardButton("📥 Export Success", callback_data="results_export_success")],
         [InlineKeyboardButton("⬅️ Back", callback_data="menu_main"),
          InlineKeyboardButton("🏠 Home", callback_data="menu_main")]
     ]
