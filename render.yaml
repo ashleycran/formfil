@@ -1,30 +1,10 @@
 services:
-  - type: web          # "web" so Render assigns a public URL for UptimeRobot pings
+  - type: web
     name: formbot
-    runtime: python
-    plan: free         # change to "starter" or "standard" to scale up
+    runtime: docker      # use Dockerfile — gives root access during build for Playwright deps
+    plan: free
 
-    packages:
-      - libnss3
-      - libnspr4
-      - libatk1.0-0
-      - libatk-bridge2.0-0
-      - libcups2
-      - libdrm2
-      - libxkbcommon0
-      - libxcomposite1
-      - libxdamage1
-      - libxfixes3
-      - libxrandr2
-      - libgbm1
-      - libasound2
-      - libpango-1.0-0
-      - libcairo2
-      - libatspi2.0-0
-
-    buildCommand: |
-      pip install -r requirements.txt
-      PLAYWRIGHT_BROWSERS_PATH=/opt/render/project/src/browsers playwright install chromium --with-deps
+    # No buildCommand or packages needed — the Dockerfile handles everything
 
     startCommand: python main.py
 
@@ -67,12 +47,7 @@ services:
       - key: PORT
         value: "10000"
 
-      # Store Playwright browsers inside the project so they survive between build and runtime
-      - key: PLAYWRIGHT_BROWSERS_PATH
-        value: "/opt/render/project/src/browsers"
-
-      # Force Python 3.11 to avoid C-extension build errors with Python 3.14
-      - key: PYTHON_VERSION
-        value: "3.11.9"
+      # Browsers are baked into the Docker image at /app/browsers (set in Dockerfile ENV)
+      # PLAYWRIGHT_BROWSERS_PATH is already set in the Dockerfile — no need to repeat it here
 
     healthCheckPath: /health   # Render will also ping this to confirm the service is up
