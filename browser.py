@@ -73,49 +73,459 @@ def _is_safe_url(url: str) -> bool:
 # ──────────────────────────────────────────────────────────────────────────────
 _FIELD_MAP: dict[str, list[str]] = {
     "full_name": [
-        "full name", "fullname", "your name", "contact name",
-        "name", "your name", "ihr name", "dein name", "full name",
+        # EN
+        "full name", "fullname", "your name", "contact name", "name",
+        # DE
+        "ihr name", "dein name", "vollständiger name", "vollstaendiger name",
+        # IT
+        "nome completo", "nome e cognome",
+        # PT
+        "nome completo",
+        # PL
+        "imię i nazwisko", "imie i nazwisko",
+        # RO
+        "nume complet",
+        # HU
+        "teljes név", "teljes nev",
+        # TR
+        "ad soyad", "adınız soyadınız",
+        # AR
+        'الاسم الكامل',
+        # RU
+        'полное имя',
+        # JA
+        'お名前',
+        # ZH
+        '姓名',
+        # KO
+        '성명',
+        # TH
+        'ชื่อ',
+        # ID/MS
+        'nama lengkap',
+        # VI
+        'họ và tên',
+        # HE
+        'שם מלא',
     ],
     "first_name": [
-        "first name", "firstname", "fname", "given name", "vorname",
-        "prenom", "prénom", "voornaam", "nombre",
+        # EN
+        "first name", "firstname", "fname", "given name",
+        # DE
+        "vorname",
+        # FR
+        "prenom", "prénom",
+        # NL
+        "voornaam",
+        # ES
+        "nombre",
+        # IT
+        "nome", "primo nome",
+        # PT
+        "primeiro nome", "nome próprio",
+        # PL
+        "imię", "imie",
+        # CZ
+        "jméno", "krestni jmeno",
+        # RO
+        "prenume",
+        # SV (Swedish)
+        "förnamn", "fornamn",
+        # NO (Norwegian)
+        "fornavn",
+        # DA (Danish)
+        "fornavn",
+        # FI (Finnish)
+        "etunimi",
+        # HU
+        "keresztnév", "keresztnev",
+        # TR
+        "ad", "isim",
+        # AR
+        'الاسم الأول',
+        # RU
+        'имя',
+        # JA
+        '名前',
+        # ZH
+        '名字',
+        # KO
+        '이름',
+        # EL (Greek)
+        'όνομα',
+        # UK (Ukrainian)
+        "ім'я",
+        # ID/MS
+        'nama depan',
     ],
     "last_name": [
+        # EN
         "last name", "lastname", "lname", "surname", "family name",
-        "nachname", "familienname", "nom", "achternaam", "apellido",
+        # DE
+        "nachname", "familienname",
+        # FR
+        "nom", "nom de famille",
+        # NL
+        "achternaam",
+        # ES
+        "apellido", "apellidos",
+        # IT
+        "cognome",
+        # PT
+        "sobrenome", "apelido",
+        # PL
+        "nazwisko",
+        # CZ
+        "příjmení", "prijmeni",
+        # RO
+        "nume de familie", "nume",
+        # SV
+        "efternamn",
+        # NO
+        "etternavn",
+        # DA
+        "efternavn",
+        # FI
+        "sukunimi",
+        # HU
+        "vezetéknév", "vezeteknev",
+        # TR
+        "soyad", "soyadınız",
+        # AR
+        'اسم العائلة',
+        # RU
+        'фамилия',
+        # JA
+        '苗字',
+        # ZH
+        '姓氏',
+        # KO
+        '성',
+        # EL
+        'επώνυμο',
+        # UK
+        'прізвище',
+        # ID/MS
+        'nama belakang',
     ],
     "email": [
+        # Universal
         "email", "e mail", "email address", "emailaddress",
-        "contact email", "your email", "e-mail", "mail", "courriel",
-        "e mail",
+        "contact email", "your email", "e-mail", "mail",
+        # FR
+        "courriel", "adresse mail", "adresse email",
+        # DE
+        "e-mail-adresse", "mailadresse",
+        # IT
+        "indirizzo email", "posta elettronica",
+        # PT
+        "correio electrónico", "endereço de email",
+        # PL
+        "adres email", "adres e-mail",
+        # CZ
+        "emailová adresa",
+        # RO
+        "adresă email",
+        # SV
+        "e-postadress",
+        # NO/DA
+        "e-postadresse",
+        # FI
+        "sähköposti", "sahkoposti",
+        # HU
+        "e-mail cím", "email cim",
+        # TR
+        "e-posta", "eposta",
+        # AR
+        'البريد الإلكتروني',
+        # RU
+        'электронная почта',
+        # JA
+        'メール',
+        # ZH
+        '邮件',
+        # KO
+        '이메일',
+        # UK
+        'електронна пошта',
+        # TH
+        'อีเมล',
+        # ID/MS
+        'surel',
+        # VI
+        'thư điện tử',
+        # HE
+        'דואר אלקטרוני',
     ],
     "phone": [
+        # EN
         "phone", "telephone", "tel", "mobile", "cell",
-        "mobile number", "contact number", "phone number", "telefon",
-        "handy", "mobilnummer", "rufnummer", "telefonnummer",
-        "téléphone", "portable", "telefono", "telefoon",
+        "mobile number", "contact number", "phone number",
+        # DE
+        "telefon", "handy", "mobilnummer", "rufnummer", "telefonnummer",
+        # FR
+        "téléphone", "telephone", "portable",
+        # NL
+        "telefoon", "telefoonnummer",
+        # ES
+        "telefono", "teléfono", "movil", "móvil",
+        # IT
+        "telefono", "cellulare",
+        # PT
+        "telefone", "telemóvel",
+        # PL
+        "telefon", "numer telefonu",
+        # CZ
+        "telefon", "telefonní číslo",
+        # RO
+        "telefon", "număr de telefon",
+        # SV
+        "telefon", "mobilnummer",
+        # NO/DA
+        "telefon", "mobilnummer",
+        # FI
+        "puhelin", "puhelinnumero",
+        # HU
+        "telefonszám", "telefon",
+        # TR
+        "telefon", "cep telefonu",
+        # AR
+        'رقم الهاتف',
+        # RU
+        'телефон',
+        # JA
+        '電話',
+        # ZH
+        '电话',
+        # KO
+        '전화번호',
+        # EL
+        'τηλέφωνο',
+        # UK
+        'телефон',
+        # TH
+        'โทรศัพท์',
+        # ID/MS
+        'telepon',
+        # VI
+        'số điện thoại',
+        # HE
+        'טלפון',
     ],
     "company": [
+        # EN
         "company", "company name", "organization", "organisation",
-        "business", "business name", "firma", "unternehmen", "betrieb",
-        "firmenname", "gesellschaft", "entreprise", "societe", "société",
-        "bedrijf", "empresa",
+        "business", "business name",
+        # DE
+        "firma", "unternehmen", "betrieb", "firmenname", "gesellschaft",
+        # FR
+        "entreprise", "societe", "société", "raison sociale",
+        # NL
+        "bedrijf", "bedrijfsnaam",
+        # ES
+        "empresa", "compañía", "compania",
+        # IT
+        "azienda", "società", "societa",
+        # PT
+        "empresa", "organização",
+        # PL
+        "firma", "nazwa firmy", "przedsiębiorstwo",
+        # CZ
+        "firma", "společnost", "spolecnost",
+        # RO
+        "companie", "firmă", "firma",
+        # SV
+        "företag", "foretag",
+        # NO
+        "bedrift", "selskap",
+        # DA
+        "virksomhed", "firma",
+        # FI
+        "yritys", "yrityksen nimi",
+        # HU
+        "cég", "cegnev", "cég neve",
+        # TR
+        "şirket", "sirket", "firma",
+        # AR
+        'اسم الشركة',
+        # RU
+        'компания',
+        # JA
+        '会社名',
+        # ZH
+        '公司',
+        # KO
+        '회사',
+        # EL
+        'εταιρεία',
+        # UK
+        'компанія',
+        # ID/MS
+        'perusahaan',
+        # VI
+        'công ty',
+        # HE
+        'חברה',
     ],
     "subject": [
-        "subject", "topic", "inquiry subject", "re", "betreff",
-        "thema", "sujet", "objet", "asunto", "onderwerp", "titel",
+        # EN
+        "subject", "topic", "inquiry subject", "re",
+        # DE
+        "betreff", "thema", "anliegen",
+        # FR
+        "sujet", "objet",
+        # NL
+        "onderwerp",
+        # ES
+        "asunto",
+        # IT
+        "oggetto", "argomento",
+        # PT
+        "assunto",
+        # PL
+        "temat",
+        # CZ
+        "předmět", "predmet",
+        # RO
+        "subiect",
+        # SV
+        "ämne", "amne",
+        # NO/DA
+        "emne",
+        # FI
+        "aihe",
+        # HU
+        "tárgy", "targy",
+        # TR
+        "konu",
+        # AR
+        'الموضوع',
+        # RU
+        'тема',
+        # JA
+        '件名',
+        # ZH
+        '主题',
+        # KO
+        '제목',
+        # EL
+        'θέμα',
+        # UK
+        'тема',
+        # ID/MS
+        'perihal',
+        # VI
+        'chủ đề',
+        # HE
+        'נושא',
     ],
     "message": [
+        # EN
         "message", "messages", "comment", "comments", "inquiry",
         "description", "your message", "body", "content",
+        # DE
         "nachricht", "mitteilung", "anliegen", "anfrage", "text",
-        "demande", "bericht", "mensaje",
+        # FR
+        "demande", "message",
+        # NL
+        "bericht",
+        # ES
+        "mensaje", "consulta",
+        # IT
+        "messaggio", "testo",
+        # PT
+        "mensagem",
+        # PL
+        "wiadomość", "wiadomosc", "treść", "tresc",
+        # CZ
+        "zpráva", "zprava", "dotaz",
+        # RO
+        "mesaj",
+        # SV
+        "meddelande",
+        # NO
+        "melding", "beskjed",
+        # DA
+        "besked",
+        # FI
+        "viesti",
+        # HU
+        "üzenet", "uzenet",
+        # TR
+        "mesaj", "ileti",
+        # AR
+        'الرسالة',
+        # RU
+        'сообщение',
+        # JA
+        'メッセージ',
+        # ZH
+        '留言',
+        # KO
+        '메시지',
+        # EL
+        'μήνυμα',
+        # UK
+        'повідомлення',
+        # TH
+        'ข้อความ',
+        # ID/MS
+        'pesan',
+        # VI
+        'tin nhắn',
+        # HE
+        'הודעה',
     ],
     "website": [
-        "website", "url", "web", "site", "homepage", "webseite",
-        "internet",
+        # Universal
+        "website", "url", "web", "site", "homepage",
+        # DE
+        "webseite", "internet", "internetadresse",
+        # FR
+        "site web", "adresse web",
+        # IT
+        "sito web",
+        # PT
+        "site web", "página web",
+        # PL
+        "strona www", "witryna",
+        # ES
+        "sitio web", "página web",
+        # TR
+        "web sitesi",
     ],
 }
+
+# Autocomplete attribute → profile key map  (item 2 fast-path)
+_AUTOCOMPLETE_MAP: dict[str, str] = {
+    'name':              'full_name',
+    'full-name':         'full_name',
+    'given-name':        'first_name',
+    'first-name':        'first_name',
+    'family-name':       'last_name',
+    'last-name':         'last_name',
+    'email':             'email',
+    'tel':               'phone',
+    'tel-national':      'phone',
+    'tel-local':         'phone',
+    'organization':      'company',
+    'organization-name': 'company',
+    'url':               'website',
+}
+
+# Unicode semantic patterns for second-pass matching  (item 3)
+_SEMANTIC_PATTERNS: list[tuple[str, str]] = [
+    # email
+    (r'@|mail|email|courriel|e-mail|メール|邮件|электронная\s*почта|بريد|이메일|อีเมล', 'email'),
+    # phone
+    (r'tel|phone|fon|☎|📞|電話|телефон|هاتف|전화|โทรศัพท์|telefon', 'phone'),
+    # full name
+    (r'名前|姓名|имя|اسم|이름|ชื่อ|naam', 'full_name'),
+    # message
+    (r'メッセージ|消息|сообщение|رسالة|메시지|ข้อความ', 'message'),
+    # company
+    (r'会社|公司|компания|شركة|회사|บริษัท', 'company'),
+]
 
 # Input types we never try to fill
 _IGNORE_TYPES = frozenset({
@@ -138,13 +548,27 @@ def _classify_field(
     aria_label: str,
     autocomplete: str,
     label_text: str = "",   # improvement 7
+    nearby_text: str = "",  # item 1c / item 3
+    inp_type: str = "",     # item 1a
 ) -> str | None:
     """Return the profile key that best matches this input, or None.
 
     Combines all available signal strings, normalises separators to spaces,
     then checks each _FIELD_MAP keyword list.
     """
-    combined = " ".join([name, field_id, placeholder, aria_label, autocomplete, label_text]).lower()
+    # ── Item 1a: input-type fast-path ──────────────────────────────────────
+    _TYPE_MAP = {'email': 'email', 'tel': 'phone', 'url': 'website'}
+    if inp_type in _TYPE_MAP:
+        return _TYPE_MAP[inp_type]
+    # textarea: continue to keyword check; fall back to 'message' at bottom
+
+    # ── Item 1b: autocomplete fast-path ───────────────────────────────────
+    ac_norm = autocomplete.strip().lower()
+    if ac_norm in _AUTOCOMPLETE_MAP:
+        return _AUTOCOMPLETE_MAP[ac_norm]
+
+    # Build combined string for ASCII _FIELD_MAP pass (lowercased)
+    combined = " ".join([name, field_id, placeholder, aria_label, autocomplete, label_text, nearby_text]).lower()
     # Normalise separators (-, _, ., /) to space (improvement 6 note)
     combined = re.sub(r"[-_./]", " ", combined)
 
@@ -153,6 +577,18 @@ def _classify_field(
             # Keywords already use spaces; just check membership
             if kw in combined:
                 return profile_key
+
+    # ── Item 3: Unicode semantic second pass (without lowercasing) ─────────
+    combined_unicode = " ".join([name, field_id, placeholder, aria_label, autocomplete, label_text, nearby_text])
+    combined_unicode = re.sub(r"[-_./]", " ", combined_unicode)
+    for pattern, profile_key in _SEMANTIC_PATTERNS:
+        if re.search(pattern, combined_unicode, re.UNICODE | re.IGNORECASE):
+            return profile_key
+
+    # ── Item 1a: textarea fallback ─────────────────────────────────────────
+    if inp_type == 'textarea':
+        return 'message'
+
     return None
 
 
@@ -237,22 +673,81 @@ async def _score_form(form, page=None) -> int:
 # Contact page discovery helper  (improvement 1)
 # ──────────────────────────────────────────────────────────────────────────────
 _CONTACT_PATHS = [
-    "/contact",
-    "/contact-us",
-    "/kontakt",
-    "/kontaktformular",
-    "/nous-contacter",
-    "/contactez-nous",
-    "/impressum",
-    "/contact.html",
-    "/contacto",
-    "/get-in-touch",
-    "/reach-us",
+    # English
+    "/contact", "/contact-us", "/contact-form", "/contactus",
+    "/get-in-touch", "/reach-us", "/reach-out", "/write-to-us",
+    "/contact.html", "/contact.php",
+    # German
+    "/kontakt", "/kontaktformular", "/kontakt.html", "/kontakt.php",
+    "/schreiben-sie-uns", "/anfrage", "/impressum",
+    # French
+    "/nous-contacter", "/contactez-nous", "/contact.html",
+    "/formulaire-contact", "/prendre-contact",
+    # Spanish
+    "/contacto", "/contactenos", "/formulario-contacto",
+    # Italian
+    "/contatti", "/contattaci", "/modulo-contatto",
+    # Portuguese
+    "/contacto", "/fale-conosco", "/formulario-contato",
+    # Dutch
+    "/contact", "/neem-contact-op", "/contactformulier",
+    # Polish
+    "/kontakt", "/napisz-do-nas",
+    # Czech
+    "/kontakt", "/kontaktujte-nas",
+    # Romanian
+    "/contact", "/contactati-ne",
+    # Swedish
+    "/kontakt", "/kontakta-oss",
+    # Norwegian
+    "/kontakt", "/kontakt-oss",
+    # Danish
+    "/kontakt", "/kontakt-os",
+    # Finnish
+    "/yhteystiedot", "/ota-yhteytta",
+    # Hungarian
+    "/kapcsolat", "/kapcsolatfelvetel",
+    # Turkish
+    "/iletisim", "/bize-ulasin",
+    # Arabic
+    '/اتصل-بنا',
+    # Russian
+    '/kontakty',
+    '/svyaz',
+    # Japanese
+    '/お問い合わせ',
+    '/%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B',
+    # Chinese
+    '/联系',
+    '/lianxi',
+    # Korean
+    '/문의하기',
+    '/munuihagi',
+    # Greek
+    '/epikoinonia',
+    '/επικοινωνια',
+    # Indonesian / Malay
+    '/hubungi-kami',
+    '/kontak',
+    # Vietnamese
+    '/lien-he',
+    # Hebrew
+    '/צור-קשר',
 ]
 
 _CONTACT_LINK_KEYWORDS = re.compile(
-    r"(contact|kontakt|schreiben|anfrage|contactez|nous contacter"
-    r"|get in touch|reach us|write to us)",
+    r"(contact|kontakt|schreiben|anfrage|contactez|nous.contacter"
+    r"|get.in.touch|reach.us|write.to.us"
+    r"|contatti|contattaci"          # Italian
+    r"|contac[to]|contacto"          # Spanish/PT
+    r"|neem.contact|contactformulier"# Dutch
+    r"|napisz|kontaktujte"           # PL/CZ
+    r"|contactati"                   # RO
+    r"|kontakta|kontakt.oss"         # SV/NO/DA
+    r"|yhteystiedot|ota.yhteytt"     # FI
+    r"|kapcsolat"                    # HU
+    r"|iletisim|bize.ulas"           # TR
+    r")",
     re.IGNORECASE,
 )
 
@@ -373,6 +868,7 @@ async def _has_captcha(page) -> bool:
 # Success message detector
 # ──────────────────────────────────────────────────────────────────────────────
 _SUCCESS_SELECTORS = [
+    # English
     ":has-text('thank you')",
     ":has-text('thanks')",
     ":has-text('message sent')",
@@ -386,15 +882,109 @@ _SUCCESS_SELECTORS = [
     ":has-text('your message has been sent')",
     ":has-text('your request has been sent')",
     ":has-text('your request has been received')",
+    # German
     ":has-text('erfolgreich')",
     ":has-text('vielen dank')",
     ":has-text('danke')",
     ":has-text('nachricht erhalten')",
+    ":has-text('ihre nachricht wurde')",
+    ":has-text('wir melden uns')",
+    ":has-text('anfrage erhalten')",
+    ":has-text('formular wurde')",
+    # French
     ":has-text('merci')",
     ":has-text('envoyé')",
     ":has-text('bien reçu')",
+    ":has-text('message bien envoyé')",
+    ":has-text('votre message a été')",
+    ":has-text('nous vous contacterons')",
+    ":has-text('demande reçue')",
+    # Spanish
     ":has-text('gracias')",
+    ":has-text('mensaje enviado')",
+    ":has-text('su mensaje ha sido')",
+    ":has-text('nos pondremos en contacto')",
+    ":has-text('enviado con éxito')",
+    # Italian
+    ":has-text('grazie')",
+    ":has-text('messaggio inviato')",
+    ":has-text('il tuo messaggio')",
+    ":has-text('ricevuto')",
+    ":has-text('ti contatteremo')",
+    # Portuguese
+    ":has-text('obrigado')",
+    ":has-text('mensagem enviada')",
+    ":has-text('a sua mensagem')",
+    ":has-text('entraremos em contato')",
+    # Dutch
     ":has-text('bericht ontvangen')",
+    ":has-text('bedankt')",
+    ":has-text('uw bericht is')",
+    ":has-text('wij nemen contact')",
+    # Polish
+    ":has-text('dziękujemy')",
+    ":has-text('wiadomość wysłana')",
+    ":has-text('zostanie skontaktowany')",
+    ":has-text('wiadomość została')",
+    # Czech
+    ":has-text('děkujeme')",
+    ":has-text('zpráva odeslána')",
+    ":has-text('vaše zpráva')",
+    # Romanian
+    ":has-text('mulțumesc')",
+    ":has-text('mesaj trimis')",
+    ":has-text('mesajul dvs')",
+    # Swedish
+    ":has-text('tack')",
+    ":has-text('meddelandet har skickats')",
+    ":has-text('vi återkommer')",
+    # Norwegian
+    ":has-text('takk')",
+    ":has-text('meldingen er sendt')",
+    # Danish
+    ":has-text('tak')",
+    ":has-text('beskeden er sendt')",
+    # Finnish
+    ":has-text('kiitos')",
+    ":has-text('viesti lähetetty')",
+    # Hungarian
+    ":has-text('köszönjük')",
+    ":has-text('üzenet elküldve')",
+    ":has-text('hamarosan felvesszük')",
+    # Turkish
+    ":has-text('teşekkür')",
+    ":has-text('mesajınız gönderildi')",
+    ":has-text('en kısa sürede')",
+    # Arabic
+    ":has-text('شكرا')",
+    ":has-text('تم الإرسال')",
+    # Russian
+    ":has-text('спасибо')",
+    ":has-text('сообщение отправлено')",
+    # Japanese
+    ":has-text('ありがとう')",
+    ":has-text('送信しました')",
+    # Chinese
+    ":has-text('谢谢')",
+    ":has-text('已发送')",
+    # Korean
+    ":has-text('감사합니다')",
+    ":has-text('전송되었습니다')",
+    # Greek
+    ":has-text('ευχαριστώ')",
+    ":has-text('εστάλη')",
+    # Ukrainian
+    ":has-text('дякуємо')",
+    ":has-text('повідомлення надіслано')",
+    # Hebrew
+    ":has-text('תודה')",
+    # Indonesian
+    ":has-text('terima kasih')",
+    ":has-text('pesan terkirim')",
+    # Vietnamese
+    ":has-text('cảm ơn')",
+    ":has-text('đã gửi')",
+    # CSS class/id patterns (language-agnostic)
     ".success-message",
     ".success_message",
     "#success-message",
@@ -403,8 +993,12 @@ _SUCCESS_SELECTORS = [
     "[class*='confirmation']",
     "[class*='thank']",
     "[class*='sent']",
+    "[class*='danke']",
+    "[class*='merci']",
+    "[class*='grazie']",
     "[id*='success']",
     "[id*='thank']",
+    "[id*='danke']",
 ]
 
 
@@ -466,17 +1060,81 @@ SUBMIT_SELECTORS = [
     "button:has-text('Jetzt anfragen')",
     "button:has-text('Abschicken')",
     "button:has-text('Weiter')",
+    "button:has-text('Übermitteln')",
     # French
     "button:has-text('Envoyer')",
     "button:has-text('Soumettre')",
     "button:has-text('Envoyer le message')",
     "button:has-text('Envoyer la demande')",
+    "button:has-text('Valider')",
     # Spanish
     "button:has-text('Enviar')",
     "button:has-text('Enviar mensaje')",
+    "button:has-text('Enviar consulta')",
+    # Italian
+    "button:has-text('Invia')",
+    "button:has-text('Invia messaggio')",
+    "button:has-text('Invia richiesta')",
+    # Portuguese
+    "button:has-text('Enviar')",
+    "button:has-text('Enviar mensagem')",
+    "button:has-text('Submeter')",
     # Dutch
     "button:has-text('Verzenden')",
     "button:has-text('Versturen')",
+    "button:has-text('Sturen')",
+    # Polish
+    "button:has-text('Wyślij')",
+    "button:has-text('Wyslij')",
+    "button:has-text('Prześlij')",
+    # Czech
+    "button:has-text('Odeslat')",
+    "button:has-text('Poslat')",
+    # Romanian
+    "button:has-text('Trimite')",
+    "button:has-text('Trimiteți')",
+    # Swedish
+    "button:has-text('Skicka')",
+    "button:has-text('Skicka meddelande')",
+    # Norwegian
+    "button:has-text('Send')",
+    "button:has-text('Send melding')",
+    # Danish
+    "button:has-text('Send')",
+    "button:has-text('Send besked')",
+    # Finnish
+    "button:has-text('Lähetä')",
+    "button:has-text('Laheta')",
+    # Hungarian
+    "button:has-text('Küldés')",
+    "button:has-text('Elküld')",
+    # Turkish
+    "button:has-text('Gönder')",
+    "button:has-text('Ilet')",
+    "button:has-text('Gönder')",
+    # Arabic
+    "button:has-text('إرسال')",
+    # Russian
+    "button:has-text('Отправить')",
+    # Japanese
+    "button:has-text('送信')",
+    "button:has-text('送る')",
+    # Chinese
+    "button:has-text('发送')",
+    "button:has-text('提交')",
+    # Korean
+    "button:has-text('보내기')",
+    "button:has-text('제출')",
+    # Greek
+    "button:has-text('Αποστολή')",
+    # Ukrainian
+    "button:has-text('Надіслати')",
+    # Hebrew
+    "button:has-text('שלח')",
+    # Indonesian
+    "button:has-text('Kirim')",
+    # Vietnamese
+    "button:has-text('Gửi')",
     # Role-based
     "[role='button'][type='submit']",
 ]
@@ -626,8 +1284,40 @@ async def _handle_selects(contact_form, url: str, page) -> None:
 # Checkbox handler  (improvement 9)
 # ──────────────────────────────────────────────────────────────────────────────
 _PRIVACY_KEYWORDS = [
-    "datenschutz", "agb", "terms", "privacy", "agree", "akzeptiere",
-    "accept", "consent", "gdpr", "dsgvo", "policy", "richtlinie",
+    # English
+    "terms", "privacy", "agree", "accept", "consent", "gdpr", "policy",
+    # German
+    "datenschutz", "agb", "akzeptiere", "dsgvo", "richtlinie", "einverstanden",
+    "zustimmen", "einwilligung",
+    # French
+    "confidentialité", "confidentialite", "rgpd", "accepte", "consentement",
+    "politique", "cgu", "cgv",
+    # Spanish
+    "privacidad", "acepto", "politica", "terminos",
+    # Italian
+    "privacy", "accetto", "consenso", "termini",
+    # Portuguese
+    "privacidade", "aceito", "consentimento", "termos",
+    # Dutch
+    "privacybeleid", "akkoord", "toestemming", "voorwaarden",
+    # Polish
+    "prywatność", "prywatnosc", "zgoda", "regulamin",
+    # Czech
+    "soukromí", "souhlas", "podmínky",
+    # Romanian
+    "confidențialitate", "acord", "termeni",
+    # Swedish
+    "integritetspolicy", "godkänner", "samtycke", "villkor",
+    # Norwegian
+    "personvern", "samtykke", "vilkår",
+    # Danish
+    "privatlivspolitik", "samtykke", "vilkår",
+    # Finnish
+    "tietosuoja", "suostun", "ehdot",
+    # Hungarian
+    "adatvédelem", "elfogadom", "beleegyezés",
+    # Turkish
+    "gizlilik", "kabul", "onay", "sartlar",
 ]
 
 
@@ -706,11 +1396,27 @@ async def _fill_form(contact_form, profile: dict, page, url: str) -> list[str]:
     missing_required: list[str] = []
     inputs = await contact_form.locator("input, textarea").all()
 
+    # Item 4/5: tracking lists for position-based fallback
+    unmatched_text_inputs: list = []   # list of (inp, dom_index)
+    email_field_indices: list = []     # dom indices for filled email fields
+    dom_index = 0
+
     for inp in inputs:
         try:
+            tag_name = await inp.evaluate("el => el.tagName.toLowerCase()")
+        except Exception:
+            tag_name = "input"
+
+        try:
             inp_type = (await inp.get_attribute("type") or "text").lower()
+            # Textarea elements carry type="text" from get_attribute; use tag name
+            if tag_name == "textarea":
+                inp_type = "textarea"
+
             if inp_type in _IGNORE_TYPES:
                 continue
+
+            dom_index += 1
 
             name_attr  = await inp.get_attribute("name")         or ""
             id_attr    = await inp.get_attribute("id")           or ""
@@ -726,7 +1432,36 @@ async def _fill_form(contact_form, profile: dict, page, url: str) -> list[str]:
             # Improvement 7: enrich classification with label text
             label_text = await _get_label_text(inp, page)
 
-            key = _classify_field(name_attr, id_attr, ph, aria, autocomp, label_text)
+            # Item 2: extract nearby DOM text
+            nearby_text = ""
+            try:
+                nearby_text = await inp.evaluate("""el => {
+                    let parts = [];
+                    // previous sibling text
+                    let prev = el.previousElementSibling;
+                    if (prev) parts.push(prev.innerText || '');
+                    // direct text nodes of parent
+                    let parent = el.parentElement;
+                    if (parent) {
+                        for (let n of parent.childNodes) {
+                            if (n.nodeType === 3) parts.push(n.textContent || '');
+                        }
+                    }
+                    // fieldset legend
+                    let fs = el.closest('fieldset');
+                    if (fs) {
+                        let leg = fs.querySelector('legend');
+                        if (leg) parts.push(leg.innerText || '');
+                    }
+                    return parts.join(' ');
+                }""")
+            except Exception:
+                nearby_text = ""
+
+            key = _classify_field(
+                name_attr, id_attr, ph, aria, autocomp, label_text,
+                nearby_text=nearby_text, inp_type=inp_type,
+            )
             value = profile.get(key) if key else None
 
             # Fallback split for first/last name from full_name
@@ -739,6 +1474,10 @@ async def _fill_form(contact_form, profile: dict, page, url: str) -> list[str]:
 
             if value:
                 str_value = str(value)
+                # Track email field index for position-based fallback
+                if key == 'email':
+                    email_field_indices.append(dom_index)
+
                 # Improvement 13: scroll into view + micro-sleep
                 try:
                     await inp.scroll_into_view_if_needed()
@@ -756,11 +1495,50 @@ async def _fill_form(contact_form, profile: dict, page, url: str) -> list[str]:
                 # Improvement 13: small pause between fields
                 await asyncio.sleep(random.uniform(0.05, 0.15))
 
-            elif required:
-                missing_required.append(name_attr or id_attr or key or "unknown")
+            else:
+                # Track unmatched for position-based fallback
+                unmatched_text_inputs.append((inp, dom_index))
+                if required:
+                    missing_required.append(name_attr or id_attr or key or "unknown")
 
         except Exception as e:
             logger.debug(f"Field fill skipped: {e}")
+
+    # ── Item 4/5: position-based fallback pass ─────────────────────────────
+    for _i, (unmatched_inp, dom_idx) in enumerate(unmatched_text_inputs):
+        try:
+            unmatched_type = await unmatched_inp.get_attribute("type") or "text"
+            unmatched_type = unmatched_type.lower()
+            try:
+                ut_tag = await unmatched_inp.evaluate("el => el.tagName.toLowerCase()")
+            except Exception:
+                ut_tag = "input"
+            if ut_tag == "textarea":
+                unmatched_type = "textarea"
+
+            fallback_key = None
+
+            if unmatched_type == "textarea":
+                fallback_key = "message"
+            elif len(unmatched_text_inputs) == 1 and profile.get("message"):
+                fallback_key = "message"
+            elif not email_field_indices or dom_idx < min(email_field_indices):
+                fallback_key = "full_name"
+            elif dom_idx > max(email_field_indices):
+                fallback_key = "subject"
+
+            if fallback_key:
+                value = profile.get(fallback_key)
+                if value:
+                    try:
+                        await unmatched_inp.scroll_into_view_if_needed()
+                        await asyncio.sleep(0.05)
+                        await unmatched_inp.type(str(value), delay=random.randint(30, 80))
+                        await asyncio.sleep(random.uniform(0.05, 0.15))
+                    except Exception as e:
+                        logger.debug(f"Position fallback fill failed: {e}")
+        except Exception as e:
+            logger.debug(f"Position fallback pass skipped: {e}")
 
     return missing_required
 
