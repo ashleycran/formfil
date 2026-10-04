@@ -1416,8 +1416,6 @@ async def _fill_form(contact_form, profile: dict, page, url: str) -> list[str]:
             if inp_type in _IGNORE_TYPES:
                 continue
 
-            dom_index += 1
-
             name_attr  = await inp.get_attribute("name")         or ""
             id_attr    = await inp.get_attribute("id")           or ""
             ph         = await inp.get_attribute("placeholder")  or ""
@@ -1425,9 +1423,12 @@ async def _fill_form(contact_form, profile: dict, page, url: str) -> list[str]:
             autocomp   = await inp.get_attribute("autocomplete") or ""
             required   = (await inp.get_attribute("required")) is not None
 
-            # Skip clearly unrelated fields
+            # Skip clearly unrelated fields (do NOT increment dom_index for these)
             if _IGNORE_NAMES.search(f"{name_attr} {id_attr}"):
                 continue
+
+            # dom_index only counts fields that are actually considered for filling
+            dom_index += 1
 
             # Improvement 7: enrich classification with label text
             label_text = await _get_label_text(inp, page)
@@ -1496,16 +1497,18 @@ async def _fill_form(contact_form, profile: dict, page, url: str) -> list[str]:
                 await asyncio.sleep(random.uniform(0.05, 0.15))
 
             else:
-                # Track unmatched for position-based fallback
-                unmatched_text_inputs.append((inp, dom_index))
+                # Track unmatched for position-based fallback.
+                # Store field identity so a successful fallback fill can prune missing_required.
+                field_id_for_required = name_attr or id_attr or key or "unknown"
+                unmatched_text_inputs.append((inp, dom_index, field_id_for_required, required))
                 if required:
-                    missing_required.append(name_attr or id_attr or key or "unknown")
+                    missing_required.append(field_id_for_required)
 
         except Exception as e:
             logger.debug(f"Field fill skipped: {e}")
 
     # ── Item 4/5: position-based fallback pass ─────────────────────────────
-    for _i, (unmatched_inp, dom_idx) in enumerate(unmatched_text_inputs):
+    for _i, (unmatched_inp, dom_idx, field_id_for_required, was_required) in enumerate(unmatched_text_inputs):
         try:
             unmatched_type = await unmatched_inp.get_attribute("type") or "text"
             unmatched_type = unmatched_type.lower()
@@ -1535,6 +1538,9 @@ async def _fill_form(contact_form, profile: dict, page, url: str) -> list[str]:
                         await asyncio.sleep(0.05)
                         await unmatched_inp.type(str(value), delay=random.randint(30, 80))
                         await asyncio.sleep(random.uniform(0.05, 0.15))
+                        # Prune from missing_required so we don't false-abort
+                        if was_required and field_id_for_required in missing_required:
+                            missing_required.remove(field_id_for_required)
                     except Exception as e:
                         logger.debug(f"Position fallback fill failed: {e}")
         except Exception as e:
