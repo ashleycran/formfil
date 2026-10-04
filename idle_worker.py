@@ -81,10 +81,9 @@ async def idle_worker_loop():
 async def _db_heartbeat():
     """
     Cheapest possible query — just checks the DB connection is alive.
-    Uses the existing asyncpg pool from database.py.
+    Uses the proper abstraction from database.py — no direct _pool access.
     """
     try:
-        async with database._pool.acquire() as conn:
-            await conn.fetchval("SELECT 1")
+        await database.db_heartbeat()
     except Exception as e:
         logger.warning(f"[idle_worker] DB heartbeat failed: {e}")

@@ -27,7 +27,11 @@ if _missing:
 MAX_GLOBAL_CONCURRENT_TABS = int(os.getenv("MAX_GLOBAL_CONCURRENT_TABS", 3))
 MAX_TABS_PER_USER          = int(os.getenv("MAX_TABS_PER_USER", 1))
 
-# Navigation timeout per page (ms)
+# Per-website processing timeout in seconds (hard outer limit per site).
+# If a site exceeds this, it is skipped and auto-enqueued for retry.
+WEBSITE_TIMEOUT_S = int(os.getenv("WEBSITE_TIMEOUT_S", 45))
+
+# Navigation timeout per page (ms) — Playwright-level inner timeout
 PAGE_TIMEOUT_MS = int(os.getenv("PAGE_TIMEOUT_MS", 25000))
 
 # How long to wait after clicking submit before checking result (ms)

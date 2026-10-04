@@ -205,9 +205,12 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Settings
     elif data == "menu_settings":
         await query.answer()
-        await query.edit_message_text("⚙️ Settings\n\nNot fully implemented.", reply_markup=keyboards.get_settings_keyboard())
-    elif data == "settings_notifications":
-        await query.answer("Notifications settings not implemented yet.", show_alert=True)
+        await query.edit_message_text(
+            "⚙️ Settings\n\n"
+            "No additional settings are available yet.\n"
+            "Features like notification preferences will appear here when ready.",
+            reply_markup=keyboards.get_back_home_keyboard(),
+        )
         
 async def text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id

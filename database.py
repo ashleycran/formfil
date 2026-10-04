@@ -103,16 +103,25 @@ async def get_user_profile(telegram_id):
             return dict(row)
         return {}
 
+_ALLOWED_PROFILE_COLUMNS = frozenset({
+    "full_name", "first_name", "last_name", "email",
+    "phone", "company", "website", "subject", "message",
+})
+
 async def update_user_profile(telegram_id, **kwargs):
+    # Whitelist column names to prevent SQL injection via kwarg keys
+    invalid = set(kwargs.keys()) - _ALLOWED_PROFILE_COLUMNS
+    if invalid:
+        raise ValueError(f"update_user_profile: disallowed column(s): {invalid}")
+
     async with _pool.acquire() as conn:
         # Ensure user exists
         await conn.execute("INSERT INTO users (telegram_id) VALUES ($1) ON CONFLICT DO NOTHING", telegram_id)
-        
+
         if kwargs:
             set_clause = ", ".join([f"{k} = ${i+1}" for i, k in enumerate(kwargs.keys())])
             values = list(kwargs.values())
             values.append(telegram_id)
-            
             query = f"UPDATE users SET {set_clause}, updated_at = CURRENT_TIMESTAMP WHERE telegram_id = ${len(values)}"
             await conn.execute(query, *values)
 
@@ -234,7 +243,7 @@ async def get_all_active_schedules():
 
 # ── Retry Queue ───────────────────────────────────────────────────────────────
 
-RETRYABLE_STATUSES = {"TIMEOUT", "ERROR", "FAILED"}
+RETRYABLE_STATUSES = {"TIMEOUT", "ERROR", "FAILED", "SKIPPED_SLOW"}
 RETRY_COOLDOWN_MINUTES = 30   # wait 30 min before first retry
 MAX_RETRY_ATTEMPTS = 3
 
@@ -278,7 +287,19 @@ async def get_retry_queue_count(telegram_id: int):
 
 # ── Dashboard ─────────────────────────────────────────────────────────────────
 
-async def get_dashboard_stats(telegram_id: int) -> dict:
+async def get_users_with_due_retries() -> list[int]:
+    """Return distinct telegram_ids that have at least one due retry entry."""
+    async with _pool.acquire() as conn:
+        rows = await conn.fetch(
+            "SELECT DISTINCT telegram_id FROM retry_queue WHERE retry_after <= NOW()"
+        )
+    return [row["telegram_id"] for row in rows]
+
+
+async def db_heartbeat() -> None:
+    """Cheapest possible query — verifies the DB connection is alive."""
+    async with _pool.acquire() as conn:
+        await conn.fetchval("SELECT 1")
     """Single query bundle that powers the user dashboard."""
     async with _pool.acquire() as conn:
         # All-time totals per status

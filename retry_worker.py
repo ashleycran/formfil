@@ -3,9 +3,9 @@ retry_worker.py
 
 Background loop that checks for due retries every 5 minutes.
 
-When processor.py records a TIMEOUT / ERROR / FAILED result for a URL,
-it also calls enqueue_retry(). This worker picks those up once the
-cooldown has passed and re-processes them silently.
+When processor.py records a TIMEOUT / ERROR / FAILED / SKIPPED_SLOW result
+for a URL, it also calls enqueue_retry(). This worker picks those up once
+the cooldown has passed and re-processes them silently.
 
 Retry behaviour:
   Attempt 1 → retry after 30 min
@@ -41,15 +41,10 @@ async def retry_worker_loop(bot):
 
 
 async def _process_due_retries(bot):
-    # Get all users who have at least one due retry
-    async with database._pool.acquire() as conn:
-        user_ids = await conn.fetch(
-            "SELECT DISTINCT telegram_id FROM retry_queue WHERE retry_after <= NOW()"
-        )
+    # Use the proper DB abstraction — no direct _pool access
+    user_ids = await database.get_users_with_due_retries()
 
-    for row in user_ids:
-        uid = row["telegram_id"]
-
+    for uid in user_ids:
         # Don't retry if user is actively processing
         if uid in idle_worker._active_jobs:
             continue
@@ -71,7 +66,7 @@ async def _process_due_retries(bot):
         except Exception:
             notify_msg = None
 
-        results_summary = {"success": 0, "failed": 0}
+        results_summary = {"success": 0, "failed": 0, "skipped": 0}
 
         for item in due:
             url     = item["url"]
@@ -83,6 +78,13 @@ async def _process_due_retries(bot):
             if result["status"] == "SUCCESS":
                 await database.remove_retry(uid, url)
                 results_summary["success"] += 1
+            elif result["status"] == "SKIPPED_SLOW":
+                # Too slow again — re-enqueue if under max attempts
+                if attempt < database.MAX_RETRY_ATTEMPTS:
+                    await database.enqueue_retry(uid, url, attempt + 1)
+                else:
+                    await database.remove_retry(uid, url)
+                results_summary["skipped"] += 1
             elif attempt < database.MAX_RETRY_ATTEMPTS:
                 # Schedule another retry with increased cooldown
                 await database.enqueue_retry(uid, url, attempt + 1)
@@ -95,14 +97,15 @@ async def _process_due_retries(bot):
         # Notify user of retry results
         if notify_msg:
             try:
+                lines = [f"🔄 Retry Complete\n"]
+                lines.append(f"✅ Success: {results_summary['success']}")
+                if results_summary["skipped"]:
+                    lines.append(f"⏩ Too slow (re-queued): {results_summary['skipped']}")
+                lines.append(f"❌ Still failing: {results_summary['failed']}")
                 await bot.edit_message_text(
                     chat_id=notify_msg.chat_id,
                     message_id=notify_msg.message_id,
-                    text=(
-                        f"🔄 Retry Complete\n\n"
-                        f"✅ Success: {results_summary['success']}\n"
-                        f"❌ Still failing: {results_summary['failed']}"
-                    ),
+                    text="\n".join(lines),
                 )
             except Exception:
                 pass

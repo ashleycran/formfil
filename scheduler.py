@@ -17,6 +17,27 @@ import idle_worker
 
 logger = logging.getLogger(__name__)
 
+# ── Scheduler context shim ────────────────────────────────────────────────────
+
+class _SchedulerContext:
+    """
+    Minimal context object passed to _run_processing when triggered by the
+    scheduler (no real telegram.ext.CallbackContext is available).
+
+    Exposes the attributes _run_processing actually uses:
+      - bot          : the Telegram Bot instance
+      - user_data    : empty dict (no per-user state needed for scheduled runs)
+      - chat_data    : empty dict
+
+    If _run_processing ever needs more context attributes, add them here
+    rather than silently failing with AttributeError at runtime.
+    """
+
+    def __init__(self, bot):
+        self.bot       = bot
+        self.user_data: dict = {}
+        self.chat_data: dict = {}
+
 # Tracks which users had their schedule fired this minute to prevent
 # double-firing if the loop ticks twice in the same minute.
 _fired_this_minute: set[int] = set()
@@ -95,14 +116,7 @@ async def _check_schedules(bot):
                 )
                 continue
 
-            # Reuse the same processing pipeline
-            from telegram.ext import ContextTypes
-            class _FakeContext:
-                """Minimal context shim so _run_processing can call context.bot."""
-                def __init__(self, b):
-                    self.bot = b
-
-            ctx = _FakeContext(bot)
+            ctx = _SchedulerContext(bot)
             idle_worker.mark_job_started(uid)
             asyncio.create_task(
                 _run_processing(uid, websites, profile, ctx, msg.chat_id, msg.message_id),
