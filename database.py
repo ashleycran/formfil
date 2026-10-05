@@ -300,6 +300,9 @@ async def db_heartbeat() -> None:
     """Cheapest possible query — verifies the DB connection is alive."""
     async with _pool.acquire() as conn:
         await conn.fetchval("SELECT 1")
+
+
+async def get_dashboard_stats(telegram_id: int) -> dict:
     """Single query bundle that powers the user dashboard."""
     async with _pool.acquire() as conn:
         # All-time totals per status
