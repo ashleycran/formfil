@@ -142,11 +142,12 @@ async def _run_processing(user_id: int, websites: list, profile: dict,
     failed    = 0
     review    = 0
     skipped   = 0
+    dead      = 0
     lock      = asyncio.Lock()
     pending: list = []
 
     async def _process_one(w: dict):
-        nonlocal processed, success, failed, review, skipped
+        nonlocal processed, success, failed, review, skipped, dead
 
         try:
             # Hard outer timeout — if the site hangs beyond this, skip it
@@ -162,7 +163,7 @@ async def _run_processing(user_id: int, websites: list, profile: dict,
 
         await database.add_result(user_id, w["url"], result["status"], result["reason"])
 
-        # Auto-enqueue retryable statuses
+        # Auto-enqueue retryable statuses only — never re-queue dead domains
         if result["status"] in database.RETRYABLE_STATUSES:
             await database.enqueue_retry(user_id, w["url"], attempt=1)
 
@@ -173,6 +174,8 @@ async def _run_processing(user_id: int, websites: list, profile: dict,
                 success += 1
             elif status == "SKIPPED_SLOW":
                 skipped += 1
+            elif status in database.DEAD_STATUSES:
+                dead += 1
             elif status in {"FAILED", "ERROR", "TIMEOUT", "BLOCKED"}:
                 failed += 1
             else:
@@ -189,6 +192,8 @@ async def _run_processing(user_id: int, websites: list, profile: dict,
         ]
         if skipped:
             lines.append(f"⏩ Too slow (re-queued): {skipped}")
+        if dead:
+            lines.append(f"🪦 Permanently dead: {dead}")
         try:
             await context.bot.edit_message_text(
                 "\n".join(lines),
@@ -225,6 +230,8 @@ async def _run_processing(user_id: int, websites: list, profile: dict,
         ]
         if skipped:
             lines.append(f"⏩ Too slow (re-queued for retry): {skipped}")
+        if dead:
+            lines.append(f"🪦 Permanently dead (no retry): {dead}")
 
         await context.bot.edit_message_text(
             "\n".join(lines),

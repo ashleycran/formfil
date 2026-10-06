@@ -244,6 +244,8 @@ async def get_all_active_schedules():
 # ── Retry Queue ───────────────────────────────────────────────────────────────
 
 RETRYABLE_STATUSES = {"TIMEOUT", "ERROR", "FAILED", "SKIPPED_SLOW"}
+# Statuses that are permanently unrecoverable — never re-queue these
+DEAD_STATUSES = {"DEAD", "NO_FORM", "CAPTCHA", "BLOCKED", "MISSING_INFORMATION"}
 RETRY_COOLDOWN_MINUTES = 30   # wait 30 min before first retry
 MAX_RETRY_ATTEMPTS = 3
 

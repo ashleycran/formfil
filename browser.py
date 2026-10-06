@@ -1169,10 +1169,33 @@ async def _find_submit_button(contact_form, page=None):
 # Core page-load helper with SSL fallback  (improvement 15)
 # ──────────────────────────────────────────────────────────────────────────────
 async def _safe_goto(page, url: str) -> str:
-    """Navigate to url, retrying with http:// on SSL/TLS errors.
+    """Navigate to url, retrying with http:// on SSL/TLS errors only.
 
     Returns the final URL actually loaded (may differ if SSL fallback triggered).
+    Raises immediately for permanently-dead errors (DNS, unreachable, refused)
+    so the caller can mark the site DEAD instead of retrying.
     """
+    # Errors that mean the domain/server is permanently unreachable —
+    # no point retrying with HTTP or re-queuing.
+    _DEAD_ERRORS = (
+        "err_name_not_resolved",
+        "err_address_unreachable",
+        "err_connection_refused",
+        "err_internet_disconnected",
+        "err_too_many_redirects",
+    )
+
+    # Errors that are specifically SSL/TLS — worth retrying over plain HTTP.
+    _SSL_ERRORS = (
+        "err_ssl_protocol_error",
+        "err_ssl_version_or_cipher_mismatch",
+        "err_ssl_key_usage_incompatible",
+        "err_cert_",
+        "ssl_error",
+        "certificate",
+        "tls",
+    )
+
     try:
         await page.goto(url, timeout=PAGE_TIMEOUT_MS, wait_until="domcontentloaded")
         return url
@@ -1180,8 +1203,13 @@ async def _safe_goto(page, url: str) -> str:
         raise
     except Exception as e:
         err_str = str(e).lower()
-        ssl_error = any(k in err_str for k in ("ssl", "certificate", "tls", "err_ssl", "net::err"))
-        if ssl_error and url.startswith("https://"):
+
+        # Permanently dead — signal caller immediately
+        if any(k in err_str for k in _DEAD_ERRORS):
+            raise
+
+        # SSL/TLS error — try plain HTTP fallback
+        if any(k in err_str for k in _SSL_ERRORS) and url.startswith("https://"):
             http_url = "http://" + url[8:]
             if _is_safe_url(http_url):
                 logger.info(f"SSL error on {url!r}, retrying with HTTP")
@@ -1190,7 +1218,11 @@ async def _safe_goto(page, url: str) -> str:
                     return http_url
                 except PlaywrightTimeoutError:
                     raise PlaywrightTimeoutError("Page load timeout (HTTP fallback)")
-            # http_url would not be safe — re-raise original
+                except Exception as e2:
+                    err2 = str(e2).lower()
+                    if any(k in err2 for k in _DEAD_ERRORS):
+                        raise e2
+                    raise e2
         raise
 
 
@@ -1614,10 +1646,11 @@ async def _try_page(page, url: str, profile: dict) -> dict | None:
     await _handle_checkboxes(contact_form, label_page)
 
     if missing_required:
-        return {
-            "status": "MISSING_INFORMATION",
-            "reason": f"Required fields missing: {', '.join(missing_required[:5])}",
-        }
+        # Don't hard-block — attempt submit anyway. Many "required" HTML attributes
+        # are client-side only and the server accepts partial data. We'll catch
+        # actual validation errors post-submit in the error detector.
+        # Only log the missing fields for debugging.
+        logger.info(f"Missing required fields on {url!r}: {missing_required} — attempting submit anyway")
 
     # ── Find submit button ─────────────────────────────────────────────────
     submit = await _find_submit_button(contact_form, page)
@@ -1761,6 +1794,17 @@ class BrowserManager:
                 except PlaywrightTimeoutError:
                     return {"status": "TIMEOUT", "reason": "Page load timeout"}
                 except Exception as e:
+                    err_str = str(e).lower()
+                    # Permanently dead domains — no retry needed
+                    _DEAD = (
+                        "err_name_not_resolved",
+                        "err_address_unreachable",
+                        "err_connection_refused",
+                        "err_internet_disconnected",
+                        "err_too_many_redirects",
+                    )
+                    if any(k in err_str for k in _DEAD):
+                        return {"status": "DEAD", "reason": str(e)[:120]}
                     return {"status": "ERROR", "reason": str(e)[:120]}
 
                 # ── 2–7. Try to fill form on the landing page ──────────────
