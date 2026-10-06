@@ -4,3 +4,4 @@ __pycache__/
 data/bot.db
 .venv/
 venv/
+.agents
