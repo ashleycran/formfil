@@ -20,6 +20,7 @@ def get_admin_menu_keyboard():
         [InlineKeyboardButton("➕ Add User", callback_data="admin_add_user"),
          InlineKeyboardButton("➖ Remove User", callback_data="admin_remove_user")],
         [InlineKeyboardButton("📋 Authorized Users", callback_data="admin_users")],
+        [InlineKeyboardButton("🧹 Purge Dead Retries", callback_data="admin_purge_retries")],
         [InlineKeyboardButton("🏠 User Bot", callback_data="menu_main")]
     ]
     return InlineKeyboardMarkup(keyboard)

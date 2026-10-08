@@ -109,8 +109,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await admin.admin_add_user_prompt(update, context)
     elif data.startswith("admin_confirm_remove_"):
         await admin.admin_confirm_remove(update, context)
-    elif data.startswith("admin_do_remove_"):
-        await admin.admin_do_remove(update, context)
+    elif data == "admin_purge_retries":
+        await admin.admin_purge_dead_retries(update, context)
         
     # Profile
     elif data == "menu_profile":

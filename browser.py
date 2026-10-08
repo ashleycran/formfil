@@ -1183,6 +1183,7 @@ async def _safe_goto(page, url: str) -> str:
         "err_connection_refused",
         "err_internet_disconnected",
         "err_too_many_redirects",
+        "err_connection_reset",
     )
 
     # Errors that are specifically SSL/TLS — worth retrying over plain HTTP.
@@ -1802,6 +1803,7 @@ class BrowserManager:
                         "err_connection_refused",
                         "err_internet_disconnected",
                         "err_too_many_redirects",
+                        "err_connection_reset",
                     )
                     if any(k in err_str for k in _DEAD):
                         return {"status": "DEAD", "reason": str(e)[:120]}

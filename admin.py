@@ -93,7 +93,25 @@ async def admin_do_remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard))
 
-async def handle_admin_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def admin_purge_dead_retries(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Admin action: remove retry queue entries for permanently dead URLs."""
+    query = update.callback_query
+    await query.answer()
+
+    user_id = update.effective_user.id
+    if user_id != ADMIN_TELEGRAM_ID:
+        await query.edit_message_text("🔒 Access Denied.")
+        return
+
+    count = await database.purge_dead_retries()
+    text = (
+        f"🧹 Retry Queue Cleaned\n\n"
+        f"Removed {count} stale entr{'y' if count == 1 else 'ies'} for permanently "
+        f"dead URLs (CAPTCHA, NO_FORM, DEAD, BLOCKED, MISSING_INFORMATION).\n\n"
+        f"These will no longer waste processing time."
+    )
+    keyboard = [[InlineKeyboardButton("⬅️ Back", callback_data="menu_admin")]]
+    await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard))
     state = context.user_data.get('state')
     user_id = update.effective_user.id
     

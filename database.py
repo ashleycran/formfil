@@ -289,7 +289,26 @@ async def get_retry_queue_count(telegram_id: int):
 
 # ── Dashboard ─────────────────────────────────────────────────────────────────
 
-async def get_users_with_due_retries() -> list[int]:
+async def purge_dead_retries() -> int:
+    """Remove retry queue entries for URLs whose last known status is permanently unrecoverable.
+    Returns the count of entries removed."""
+    async with _pool.acquire() as conn:
+        result = await conn.execute('''
+            DELETE FROM retry_queue rq
+            USING results r
+            WHERE rq.telegram_id = r.telegram_id
+              AND rq.url = r.url
+              AND r.status = ANY($1::text[])
+              AND r.id = (
+                  SELECT MAX(id) FROM results r2
+                  WHERE r2.telegram_id = rq.telegram_id AND r2.url = rq.url
+              )
+        ''', list(DEAD_STATUSES))
+        # result is like "DELETE 42"
+        try:
+            return int(result.split()[-1])
+        except Exception:
+            return 0
     """Return distinct telegram_ids that have at least one due retry entry."""
     async with _pool.acquire() as conn:
         rows = await conn.fetch(
